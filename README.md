@@ -236,43 +236,9 @@ seeds, time = greedy.select_seeds(k=3)
 - Use more greedy MC simulations for labels
 - Try different hidden_dim (64, 128, 256)
 
-## References
 
-### Influence Maximization
-- Kempe et al. (2003): "Maximizing the spread of influence through a social network"
-- Original greedy algorithm paper
 
-### Graph Neural Networks
-- Hamilton et al. (2017): GraphSAGE
-- Veličković et al. (2017): Graph Attention Networks (GAT)
 
-### Cybercrime Networks
-- Cybercrime co-occurrence analysis (domain-specific)
 
-## Citation
 
-If you use this codebase, please cite:
 
-```
-@misc{gnn_im_2025,
-  title={GNN-Based Influence Maximization on Cybercrime Co-occurrence Networks},
-  author={Shivansh, Student},
-  year={2025},
-  institution={Thapar Institute of Engineering and Technology}
-}
-```
-
-## Contact & Support
-
-For issues, questions, or contributions:
-- Check existing issues in experiments/
-- Review src/ documentation
-- Run quick_start.py for diagnostics
-
-## License
-
-Research project — use freely for academic purposes.
-
----
-
-**Last Updated**: April 2025
