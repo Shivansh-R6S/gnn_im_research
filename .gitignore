@@ -1,0 +1,10 @@
+gnn_im_env/
+results/
+*.csv
+*.png
+*.pkl, *.pickle
+__pycache__/
+.vscode/, .idea/
+*.pyc, *.pyo
+.env
+data/processed/
