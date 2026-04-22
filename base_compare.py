@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""
-Quick Start: Test Data Loading & Baseline Algorithms
 
-This script:
-1. Loads the cybercrime dataset
-2. Prints graph statistics
-3. Runs baseline algorithms (Random, Degree, PageRank, Greedy)
-4. Evaluates and compares results
-"""
 
 import sys
 import os
@@ -30,7 +22,7 @@ def main():
     """Run quick start tests."""
     
     # Configuration
-    dataset_path = "data/raw/cybercrime_edge_list.txt"
+    dataset_path = "data/raw/london_weights_edge_list.txt"
     k = 3  # Number of seeds
     mc_iterations = 500  # MC runs for evaluation
     
@@ -135,14 +127,7 @@ def main():
         ratio = (spread / greedy_spread * 100) if greedy_spread > 0 else 0
         print(f"{algo:<15} {ratio:.1f}% of Greedy spread")
     
-    print("\n" + "="*70)
-    print("QUICK START COMPLETE")
-    print("="*70)
-    print("\nNext steps:")
-    print("  1. Verify baseline results above")
-    print("  2. Run: python src/gnn_model.py to build GNN")
-    print("  3. Run: python experiments/exp1_influence_spread.py for full experiments")
-    print()
+  
 
 
 if __name__ == "__main__":

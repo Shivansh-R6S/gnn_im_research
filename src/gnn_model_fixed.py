@@ -1,5 +1,5 @@
 """
-GNN-Based Influence Maximization Model
+GNN-Based Influence Maximization Model (FIXED FOR DETERMINISM)
 
 Architecture:
 - Graph Encoder: GraphSAGE (learns node embeddings from graph structure)
@@ -58,14 +58,12 @@ class GraphSAGEEncoder(nn.Module):
         Args:
             x: Node features [num_nodes, input_dim]
             edge_index: Edge connectivity [2, num_edges]
-            edge_weight: Edge weights [num_edges] (ignored for GraphSAGE)
+            edge_weight: Edge weights (ignored for GraphSAGE)
             
         Returns:
             Node embeddings [num_nodes, hidden_dim]
         """
         for i, conv in enumerate(self.convs):
-            # GraphSAGE doesn't use edge_weight in the same way as other convs
-            # Just pass edge_index without weights for compatibility
             x = conv(x, edge_index)
             if i < len(self.convs) - 1:
                 x = F.relu(x)
@@ -92,10 +90,8 @@ class GATEncoder(nn.Module):
         
         # GAT layers with better attention handling
         self.convs = nn.ModuleList()
-        # First layer: input_dim -> hidden_dim with attention heads
         self.convs.append(GATConv(input_dim, hidden_dim // num_heads, heads=num_heads, concat=True))
         
-        # Middle layers: hidden_dim -> hidden_dim
         for _ in range(num_layers - 1):
             self.convs.append(GATConv(hidden_dim, hidden_dim // num_heads, heads=num_heads, concat=True))
         
@@ -107,7 +103,7 @@ class GATEncoder(nn.Module):
         Args:
             x: Node features [num_nodes, input_dim]
             edge_index: Edge connectivity [2, num_edges]
-            edge_weight: Edge weights (not directly used in GAT, but kept for API consistency)
+            edge_weight: Edge weights (not directly used in GAT)
             
         Returns:
             Node embeddings [num_nodes, hidden_dim]
@@ -180,6 +176,12 @@ class GNNInfluenceMaximizer(nn.Module):
         """
         super().__init__()
         
+        # ENSURE DETERMINISTIC BEHAVIOR
+        torch.manual_seed(42)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(42)
+            torch.cuda.manual_seed_all(42)
+        
         self.G = G
         self.device = device
         self.num_nodes = G.number_of_nodes()
@@ -189,19 +191,22 @@ class GNNInfluenceMaximizer(nn.Module):
         # Convert graph to PyG format
         self.edge_index, self.edge_weight = self._graph_to_edge_tensor()
         
-        # Build encoder
+        # Build encoder WITH EXPLICIT SEED
         if encoder_type.lower() == 'graphsage':
             if not TORCH_GEOMETRIC_AVAILABLE:
                 raise RuntimeError("torch_geometric required for GraphSAGE. Install with: pip install torch_geometric")
+            torch.manual_seed(42)
             self.encoder = GraphSAGEEncoder(input_dim, hidden_dim, num_layers)
         elif encoder_type.lower() == 'gat':
             if not TORCH_GEOMETRIC_AVAILABLE:
                 raise RuntimeError("torch_geometric required for GAT. Install with: pip install torch_geometric")
+            torch.manual_seed(42)
             self.encoder = GATEncoder(input_dim, hidden_dim, num_layers)
         else:
             raise ValueError(f"Unknown encoder type: {encoder_type}")
         
-        # Build decoder
+        # Build decoder WITH EXPLICIT SEED
+        torch.manual_seed(42)
         self.decoder = InfluenceHead(hidden_dim)
         
         self.to(device)
@@ -283,11 +288,16 @@ class GNNInfluenceMaximizer(nn.Module):
         
         Args:
             greedy_seeds: Seeds selected by greedy algorithm
-            greedy_marginal_gains: Dict mapping node -> marginal gain (influence of selecting that node)
+            greedy_marginal_gains: Dict mapping node -> marginal gain
             epochs: Number of training epochs
             lr: Learning rate
             verbose: Print progress
         """
+        
+        # ENSURE DETERMINISTIC TRAINING
+        torch.manual_seed(42)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
         
         # Prepare training targets
         y = torch.zeros(self.num_nodes, device=self.device)
@@ -298,7 +308,8 @@ class GNNInfluenceMaximizer(nn.Module):
         # Normalize to [0, 1]
         y = y / (y.max() + 1e-8)
         
-        # Optimizer
+        # Optimizer WITH EXPLICIT SEED
+        torch.manual_seed(42)
         optimizer = optim.Adam(self.parameters(), lr=lr)
         loss_fn = nn.MSELoss()
         
@@ -357,38 +368,4 @@ def get_device() -> str:
 
 
 if __name__ == "__main__":
-    from data_loader import load_graph
-    from baselines import run_greedy_im
-    from diffusion import get_marginal_gain
-    
-    print("Testing GNN model...")
-    
-    # Load graph
-    G = load_graph("data/raw/cybercrime_edge_list.txt")
-    print(f"Loaded graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
-    
-    # Initialize GNN
-    device = get_device()
-    print(f"Using device: {device}")
-    
-    gnn = GNNInfluenceMaximizer(
-        G,
-        input_dim=1,
-        hidden_dim=128,
-        num_layers=2,
-        encoder_type='graphsage',
-        device=device
-    )
-    
-    print(f"\nGNN model initialized")
-    print(f"  Encoder: GraphSAGE")
-    print(f"  Hidden dim: 128")
-    print(f"  Num layers: 2")
-    
-    # Demo: Predict seeds
-    print(f"\nPredicting seeds (before training)...")
-    seeds_untrained = gnn.select_seeds(k=3)
-    print(f"  Seeds: {seeds_untrained}")
-    
-    print("\nQuick demo complete. Full training requires greedy baseline data.")
-    print("For full implementation, see experiments/exp1_influence_spread.py")
+    print("GNN Model Fixed module loaded successfully")

@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
-"""
-Experiment 1: Influence Spread Comparison
 
-Compare all algorithms across different budgets (k):
-- GNN-IM (our method)
-- Greedy IM (gold standard)
-- Degree Heuristic
-- PageRank
-- Random (baseline)
-
-Output:
-- Line plot of σ vs k for each algorithm
-- Data table with mean and 95% CI
-"""
 
 import sys
 import os
@@ -73,7 +60,7 @@ def train_gnn_on_greedy(G, greedy_seeds: List[str], mc_iterations: int = 500):
     return gnn
 
 
-def run_experiment_1(dataset_path: str = "data/raw/cybercrime_edge_list.txt"):
+def run_experiment_1(dataset_path: str = "data/raw/city_influence_edge_list.txt"):
     """Run Experiment 1: Influence Spread vs Budget."""
     
     # Configuration
